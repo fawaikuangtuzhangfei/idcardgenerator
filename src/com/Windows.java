@@ -19,13 +19,13 @@ import java.util.List;
 import java.util.Map;
 import java.util.Scanner;
 
+import javax.imageio.ImageIO;
+import javax.imageio.ImageWriteParam;
+import javax.imageio.ImageWriter;
 import javax.swing.ImageIcon;
 
 import sun.misc.BASE64Encoder;
 
-import com.sun.image.codec.jpeg.JPEGCodec;
-import com.sun.image.codec.jpeg.JPEGEncodeParam;
-import com.sun.image.codec.jpeg.JPEGImageEncoder;
 
 public class Windows {
 
@@ -158,19 +158,9 @@ public class Windows {
 
 	/**
 	 * 给图片添加水印
-	 * 
+	 *
 	 * @param filePath
 	 *            需要添加水印的图片的路径
-	 * @param markContent
-	 *            水印的文字
-	 * @param markContentColor
-	 *            水印文字的颜色
-	 * @param qualNum
-	 *            图片质量
-	 * @param fontType
-	 *            字体
-	 * @param fontsize
-	 *            字体大小
 	 * @return
 	 * @author zhongweihai newwei2001@yahoo.com.cn
 	 */
@@ -190,10 +180,18 @@ public class Windows {
 		g.dispose();
 		try {
 			FileOutputStream out = new FileOutputStream(outFile);
-			JPEGImageEncoder encoder = JPEGCodec.createJPEGEncoder(out);
-			JPEGEncodeParam param = encoder.getDefaultJPEGEncodeParam(bimage);
-			param.setQuality(70f, true);
-			encoder.encode(bimage, param);
+			ImageWriter writer = ImageIO.getImageWritersByFormatName("jpeg").next();
+			ImageWriteParam param = writer.getDefaultWriteParam();
+			param.setCompressionMode(ImageWriteParam.MODE_EXPLICIT);
+			param.setCompressionQuality(0.7f);
+
+			// 设置输出目标
+			writer.setOutput(ImageIO.createImageOutputStream(out));
+
+			// 编码并写入JPEG数据
+			writer.write(null, new javax.imageio.IIOImage(bimage, null, null), param);
+
+			// 关闭输出流
 			out.close();
 		} catch (Exception e) {
 			return false;
@@ -499,7 +497,7 @@ public class Windows {
 		}
 		return dat;
 	}
-	
+
 	public static void main(String[] args) {
 		try {
 			help();
@@ -529,17 +527,17 @@ public class Windows {
 					System.exit(-1);
 				} else {
 					int num = parseInt(arg, 1);
-					
+
 					Windows wm = new Windows();
 					String url = wm.getClass().getResource("/idf.jpg").getPath();
 					url = Util.StringDecode(url);
 					String baseDir = getJarDir(url);
 					createDir(baseDir + "\\images\\");
 					String newDir = baseDir + "\\idcode\\";
-					
+
 					System.out.println("请输入需要要保存的路径（默认保存当前路径，若要默认直接按回车即可）...");
 					arg = sc.nextLine();
-					
+
 					if (args.length > 1) {
 						newDir = args[1];
 					} else {
